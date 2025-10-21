@@ -1,0 +1,6 @@
+header{
+    text-align: center;
+}
+input, textarea, button{
+    width: 100%;
+}

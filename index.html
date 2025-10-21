@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>コナンファンのたまり場</title>
+   <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>コナンファンのたまり場</h1>
+            <p>このサイトはコナンについて語り合うサイトです。できることは主に、以下の３つです</p>
+           <nav><li>1.コナンに関する話題カードを作る</li>
+           <li>2.その話題カードに反応する</li>
+           <li>3.話題カードへの反応を見て考察や語り合って楽しむ</li>
+            </nav>
+          <nav> <p>禁止事項は以下の１つです</p>
+           <li>1.いかなる誹謗中傷を目的としたコメントも行わない</li>
+           </nav>
+         </header>
+         <main>
+             <input id="author" placeholder="名前（省略可）">
+             <textarea id="content" placeholder="コメントしてください" ></textarea>
+             <!-- 修正済み: ボタンにIDを追加 -->
+             <button id="postButton">話題カードを作成する</button>
+             <div id="posts"></div>
+         </main>
+    
+    <!-- 
+      V9 モジュラー方式で必要なFirebase SDKをCDNからインポートし、初期化します。
+    -->
+    <script type="module">
+        // 必要な関数を CDN からインポート
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+
+        // あなたの Firebase 設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyBhMD-MZidG7U1kIGloqQHRnfe95roIjvU",
+            authDomain: "mysterysns-734f7.firebaseapp.com",
+            projectId: "mysterysns-734f7",
+            storageBucket: "mysterysns-734f7.firebasestorage.app",
+            messagingSenderId: "4298363521",
+            appId: "1:4298363521:web:7ce62992d54f8e37c8b380",
+            measurementId: "G-5PWGSZKMQX"
+        };
+
+        // Firebase の初期化
+        const app = initializeApp(firebaseConfig);
+        
+        // Firestore のインスタンスを取得
+        const db = getFirestore(app);
+
+        // 投稿処理を script.js で行うために、必要な関数とインスタンスをグローバルに公開します。
+        window.db = db;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.query = query;
+        window.orderBy = orderBy;
+        window.onSnapshot = onSnapshot;
+        window.serverTimestamp = serverTimestamp;
+
+    </script>
+    
+    <!-- 投稿処理のスクリプトを読み込む -->
+    <script src="script.js" type="module"></script> 
+</body>
+</html>
