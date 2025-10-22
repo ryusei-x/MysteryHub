@@ -1,6 +1,10 @@
 header{
     text-align: center;
 }
+header img{
+    width:10%;
+}
 input, textarea, button{
     width: 100%;
+
 }
