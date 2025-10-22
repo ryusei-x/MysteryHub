@@ -3,8 +3,12 @@ header{
 }
 header img{
     width:10%;
+    position: relative;
+    top:-180px;
+    left:-320px;
 }
 input, textarea, button{
     width: 100%;
 
 }
+
