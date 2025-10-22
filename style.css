@@ -4,11 +4,12 @@ header{
 header img{
     width:10%;
     position: relative;
-    top:-180px;
+    top:-103px;
     left:-320px;
 }
 input, textarea, button{
     width: 100%;
 
 }
+
 
