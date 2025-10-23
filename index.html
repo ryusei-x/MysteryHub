@@ -21,20 +21,36 @@
            </nav>
          </header>
          <main>
-             <input id="author" placeholder="ニックネーム">
+             <input id="author" placeholder="ニックネーム" value="">
              <textarea id="content" placeholder="コメントしてください" ></textarea>
-             <!-- 修正済み: ボタンにIDを追加 -->
-             <button id="postButton">話題カードを作成する</button>
-             <div id="posts"></div>
+             <button id="postButton">投稿する</button>
+
+             <div id="posts">
+                 </div>
          </main>
     
-    <!-- 
-      V9 モジュラー方式で必要なFirebase SDKをCDNからインポートし、初期化します。
-    -->
     <script type="module">
         // 必要な関数を CDN からインポート
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+        import { 
+            initializeApp 
+        } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            query, 
+            orderBy, 
+            onSnapshot, 
+            serverTimestamp,
+            // --- ★追加・修正した関数★ ---
+            doc, 
+            updateDoc, 
+            increment,
+            arrayUnion,
+            arrayRemove,
+            getDoc,
+            // -----------------------------
+        } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
         // あなたの Firebase 設定
         const firebaseConfig = {
@@ -61,10 +77,16 @@
         window.orderBy = orderBy;
         window.onSnapshot = onSnapshot;
         window.serverTimestamp = serverTimestamp;
-
+        // --- ★追加・修正した関数を公開★ ---
+        window.doc = doc;
+        window.updateDoc = updateDoc;
+        window.increment = increment;
+        window.arrayUnion = arrayUnion;
+        window.arrayRemove = arrayRemove;
+        window.getDoc = getDoc;
+        // ------------------------------------
     </script>
     
-    <!-- 投稿処理のスクリプトを読み込む -->
     <script src="script.js" type="module"></script> 
 </body>
 
