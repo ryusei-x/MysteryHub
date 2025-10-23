@@ -41,8 +41,8 @@ postButton.addEventListener('click', async () => {
             author: author,
             content: content,
             timestamp: serverTimestamp(),
-            likesCount: 0, // ★新規追加: いいね数
-            likedBy: [],   // ★新規追加: いいねしたユーザーID（ここではニックネームで代用）
+            likesCount: 0, 
+            likedBy: [],
         });
 
         // フォームをクリア
@@ -55,14 +55,21 @@ postButton.addEventListener('click', async () => {
 });
 
 
-// 3. いいね機能の実装 (★新規追加)
+// 3. いいね機能の実装 (修正)
 async function toggleLike(postId, currentAuthor) {
-    if (!currentAuthor) {
-        alert("いいねするにはニックネームを入力してください！");
-        return;
+    
+    let authorToUse = currentAuthor;
+    
+    // ★【修正】ニックネームが空の場合、promptで入力を求める★
+    if (!authorToUse) {
+        authorToUse = prompt("いいねをするためのニックネームを入力してください:");
+        if (!authorToUse || authorToUse.trim() === '') {
+            alert("ニックネームが入力されなかったため、いいねできません。");
+            return;
+        }
+        authorToUse = authorToUse.trim();
     }
     
-    // ユーザーはニックネーム（currentAuthor）で識別することにします。
     const postRef = docRef(db, "posts", postId);
     
     // 現在の投稿ドキュメントを取得して、いいね状態を確認
@@ -73,21 +80,21 @@ async function toggleLike(postId, currentAuthor) {
     }
     
     const postData = postSnap.data();
-    // ニックネームが likedBy 配列に含まれているか確認
-    const isLiked = postData.likedBy && postData.likedBy.includes(currentAuthor);
+    // authorToUseを使っていいね状態を確認
+    const isLiked = postData.likedBy && postData.likedBy.includes(authorToUse);
     
     try {
         if (isLiked) {
             // いいねを解除: カウントを減らし、ニックネームを配列から削除
             await updateDoc(postRef, {
                 likesCount: increment(-1),
-                likedBy: arrayRemove(currentAuthor)
+                likedBy: arrayRemove(authorToUse)
             });
         } else {
             // いいねを追加: カウントを増やし、ニックネームを配列に追加
             await updateDoc(postRef, {
                 likesCount: increment(1),
-                likedBy: arrayUnion(currentAuthor)
+                likedBy: arrayUnion(authorToUse)
             });
         }
     } catch (error) {
@@ -98,15 +105,22 @@ async function toggleLike(postId, currentAuthor) {
 window.toggleLike = toggleLike; // HTMLから呼び出せるようにグローバルに公開
 
 
-// 4. 返信機能の処理 (★新規追加)
+// 4. 返信機能の処理 (修正)
 async function postReply(postId) {
+    
     // ニックネーム入力欄から自動取得
-    const replyAuthor = authorInput.value.trim();
-    if (!replyAuthor) {
-        alert("返信するにはニックネームを入力してください！");
-        return;
-    }
+    let replyAuthor = authorInput.value.trim();
 
+    // ★【修正】ニックネームが空の場合、promptで入力を求める★
+    if (!replyAuthor) {
+        replyAuthor = prompt("返信をするためのニックネームを入力してください:");
+        if (!replyAuthor || replyAuthor.trim() === '') {
+            alert("ニックネームが入力されなかったため、返信できません。");
+            return;
+        }
+        replyAuthor = replyAuthor.trim();
+    }
+    
     const replyContent = prompt("返信コメントを入力してください:");
     if (!replyContent) return;
 
@@ -181,16 +195,14 @@ onSnapshot(postsQuery, (snapshot) => {
         const dateString = dateObject ? dateObject.toLocaleString('ja-JP') : '投稿中...';
         
         // ニックネーム入力欄から現在のユーザー名を取得（いいねの判定に使用）
-        // フォームに入力がなければ空文字列
         const currentAuthor = authorInput.value.trim(); 
         
-        // currentAuthorが存在し、かつ likedBy 配列に含まれているか確認
-        const isLiked = currentAuthor && post.likedBy && post.likedBy.includes(currentAuthor);
+        const likedByArray = Array.isArray(post.likedBy) ? post.likedBy : [];
+        const isLiked = currentAuthor && likedByArray.includes(currentAuthor);
         const likeButtonClass = isLiked ? 'liked' : '';
         const likeButtonText = isLiked ? '★いいね解除' : 'いいね！';
 
-        // currentAuthorが空の場合はボタンを無効化
-        const disabledAttr = currentAuthor ? '' : 'disabled title="ニックネームを入力するといいねできます"';
+        // ★【修正】ボタンの無効化（disabled属性）のコードを削除★
         
         // onclickに渡す文字列に含まれる可能性のあるシングルクォートをエスケープ処理
         const escapedAuthor = currentAuthor.replace(/'/g, "\\'"); 
@@ -205,14 +217,12 @@ onSnapshot(postsQuery, (snapshot) => {
                 <button 
                     class="like-button ${likeButtonClass}" 
                     onclick="window.toggleLike('${postId}', '${escapedAuthor}')"
-                    ${disabledAttr}
                 >
                     ${likeButtonText} (${post.likesCount || 0})
                 </button>
                 <button 
                     class="reply-button" 
                     onclick="window.postReply('${postId}')"
-                    ${disabledAttr}
                 >
                     返信する
                 </button>
@@ -229,3 +239,4 @@ onSnapshot(postsQuery, (snapshot) => {
         renderReplies(postId, repliesDiv);
     });
 });
+
