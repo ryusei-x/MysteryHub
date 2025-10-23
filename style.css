@@ -7,14 +7,11 @@ header img{
     top:-103px;
     left:-320px;
 }
-input, textarea, {
+input, textarea,botton {
     width: 100%;
 
 }
-botton{
-    width:100%
-    background-color:blue;
-}
+
 
 
 
