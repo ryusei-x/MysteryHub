@@ -1,6 +1,10 @@
 header{
     text-align: center;
 }
+header h1{
+     font-size: 32px; 
+}
+
 header img{
     width:10%;
     position: relative;
@@ -97,6 +101,7 @@ button{ /* 修正: botton を button に修正 */
     padding-left: 10px;
     border-left: 2px solid #aaa;
 }
+
 
 
 
