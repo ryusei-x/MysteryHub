@@ -9,8 +9,8 @@ header h1{
 header img{
     width:10%;
     position: relative;
-    top:-103px;
-    left:-320px;
+    top:-89px;
+    left:-220px;
 }
 input, textarea { /* 修正: 末尾の不要なコンマを削除 */
     width: 100%;
@@ -102,6 +102,7 @@ button{ /* 修正: botton を button に修正 */
     padding-left: 10px;
     border-left: 2px solid #aaa;
 }
+
 
 
 
