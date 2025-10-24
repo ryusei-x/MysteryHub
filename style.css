@@ -1,5 +1,6 @@
 header{
     text-align: center;
+    background-color: bisque；
 }
 header h1{
      font-size: 26px; 
@@ -101,6 +102,7 @@ button{ /* 修正: botton を button に修正 */
     padding-left: 10px;
     border-left: 2px solid #aaa;
 }
+
 
 
 
