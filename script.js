@@ -1,52 +1,115 @@
-// index.html で window に設定された Firestore の関数とインスタンスを使用します。
-
-// グローバル変数から必要な関数とインスタンスを取得
-const db = window.db;
-const addDoc = window.addDoc;
-const collection = window.collection;
-const serverTimestamp = window.serverTimestamp;
-const query = window.query;
-const orderBy = window.orderBy;
-const onSnapshot = window.onSnapshot;
-const docRef = window.doc; // doc関数は docRef という変数名で取得
-const updateDoc = window.updateDoc;
-const increment = window.increment;
-const arrayUnion = window.arrayUnion;
-const arrayRemove = window.arrayRemove;
-const getDoc = window.getDoc;
+// index.html で window に設定された Firestore/Storage の関数とインスタンスを使用します。
 
 // 1. 必要な HTML 要素の取得
 const postButton = document.getElementById('postButton');
 const authorInput = document.getElementById('author');
 const contentInput = document.getElementById('content');
+// 画像アップロード機能の要素を取得
+const imageFileInput = document.getElementById('imageFile'); 
 const postsDiv = document.getElementById('posts');
 
-// 2. 投稿ボタンクリック時の処理（書き込み処理）
-postButton.addEventListener('click', async () => {
-    
-    // ニックネーム入力欄の値を、いいね機能でも使うためにトリムして取得
-    const author = authorInput.value.trim() || '匿名ファン'; 
-    const content = contentInput.value.trim();
 
-    if (!content) {
-        alert("コメントを入力してください！");
+// ★いいね数を更新する非同期関数★
+async function likePost(postId) {
+    const db = window.db;
+    const updateDoc = window.updateDoc;
+    const doc = window.doc;
+    const collection = window.collection;
+    const increment = window.increment;
+
+    try {
+        // 更新したいドキュメントの参照を取得
+        const postRef = doc(collection(db, "posts"), postId);
+        
+        // 'likes'フィールドを1インクリメント
+        await updateDoc(postRef, {
+            likes: increment(1)
+        });
+    } catch (error) {
+        console.error("いいね更新エラー:", error);
+    }
+}
+
+
+// ★返信を Firestore のサブコレクションに書き込む関数★
+async function postReply(postId, author, content) {
+    const db = window.db;
+    const addDoc = window.addDoc;
+    const collection = window.collection;
+    const serverTimestamp = window.serverTimestamp;
+
+    if (!content.trim()) {
+        alert("返信内容を入力してください！");
         return;
     }
 
     try {
+        // 特定の投稿ドキュメント内の "replies" サブコレクションへの参照を取得
+        const repliesCollectionRef = collection(db, "posts", postId, "replies");
+        
+        await addDoc(repliesCollectionRef, {
+            author: author || '匿名ファン',
+            content: content,
+            timestamp: serverTimestamp()
+        });
+
+    } catch (error) {
+        console.error("返信投稿エラー:", error);
+        alert("返信中にエラーが発生しました。コンソールを確認してください。");
+    }
+}
+
+
+// 2. 投稿ボタンクリック時の処理（書き込み処理 - 画像アップロードを含む）
+postButton.addEventListener('click', async () => {
+    // グローバル変数から必要な関数とインスタンスを取得
+    const db = window.db;
+    const addDoc = window.addDoc;
+    const collection = window.collection;
+    const serverTimestamp = window.serverTimestamp;
+    
+    // Storage関連の関数を取得
+    const storage = window.storage;
+    const storageRef = window.storageRef;
+    const uploadBytes = window.uploadBytes;
+    const getDownloadURL = window.getDownloadURL;
+
+    const author = authorInput.value.trim() || '匿名ファン';
+    const content = contentInput.value.trim();
+    // 選択されたファイルを取得
+    const imageFile = imageFileInput.files[0];
+    let imageUrl = null; 
+
+    if (!content && !imageFile) { 
+        alert("コメントまたは画像を入力してください！");
+        return;
+    }
+
+    try {
+        // ★画像ファイルが選択されている場合の処理★
+        if (imageFile) {
+            const uniqueFileName = `${Date.now()}_${imageFile.name}`;
+            const imageRef = storageRef(storage, `post_images/${uniqueFileName}`);
+            
+            const snapshot = await uploadBytes(imageRef, imageFile);
+            
+            imageUrl = await getDownloadURL(snapshot.ref);
+        }
+
         const postsCollectionRef = collection(db, "posts");
         
-        // データを追加。いいね用のフィールド(likesCount)と、いいねを押したユーザーIDの配列(likedBy)を追加
         await addDoc(postsCollectionRef, {
             author: author,
             content: content,
-            timestamp: serverTimestamp(),
-            likesCount: 0, 
-            likedBy: [],
+            imageUrl: imageUrl, // 画像URLを追加
+            likes: 0,           // いいねの初期値を0に設定
+            timestamp: serverTimestamp() 
         });
 
         // フォームをクリア
+        authorInput.value = '';
         contentInput.value = '';
+        imageFileInput.value = '';
 
     } catch (error) {
         console.error("投稿エラー:", error);
@@ -55,188 +118,153 @@ postButton.addEventListener('click', async () => {
 });
 
 
-// 3. いいね機能の実装 (修正)
-async function toggleLike(postId, currentAuthor) {
-    
-    let authorToUse = currentAuthor;
-    
-    // ★【修正】ニックネームが空の場合、promptで入力を求める★
-    if (!authorToUse) {
-        authorToUse = prompt("いいねをするためのニックネームを入力してください:");
-        if (!authorToUse || authorToUse.trim() === '') {
-            alert("ニックネームが入力されなかったため、いいねできません。");
-            return;
-        }
-        authorToUse = authorToUse.trim();
-    }
-    
-    const postRef = docRef(db, "posts", postId);
-    
-    // 現在の投稿ドキュメントを取得して、いいね状態を確認
-    const postSnap = await getDoc(postRef);
-    if (!postSnap.exists()) {
-        console.error("投稿が見つかりません:", postId);
-        return;
-    }
-    
-    const postData = postSnap.data();
-    // authorToUseを使っていいね状態を確認
-    const isLiked = postData.likedBy && postData.likedBy.includes(authorToUse);
-    
-    try {
-        if (isLiked) {
-            // いいねを解除: カウントを減らし、ニックネームを配列から削除
-            await updateDoc(postRef, {
-                likesCount: increment(-1),
-                likedBy: arrayRemove(authorToUse)
-            });
-        } else {
-            // いいねを追加: カウントを増やし、ニックネームを配列に追加
-            await updateDoc(postRef, {
-                likesCount: increment(1),
-                likedBy: arrayUnion(authorToUse)
-            });
-        }
-    } catch (error) {
-        console.error("いいね処理エラー:", error);
-        alert("いいね処理中にエラーが発生しました。コンソールを確認してください。");
-    }
-}
-window.toggleLike = toggleLike; // HTMLから呼び出せるようにグローバルに公開
+// 3. リアルタイムでの投稿表示処理（読み込み処理 - いいね・返信を含む）
 
+// グローバル変数から必要な関数とインスタンスを取得
+const db = window.db;
+const query = window.query;
+const orderBy = window.orderBy;
+const collection = window.collection;
+const onSnapshot = window.onSnapshot;
 
-// 4. 返信機能の処理 (修正)
-async function postReply(postId) {
-    
-    // ニックネーム入力欄から自動取得
-    let replyAuthor = authorInput.value.trim();
-
-    // ★【修正】ニックネームが空の場合、promptで入力を求める★
-    if (!replyAuthor) {
-        replyAuthor = prompt("返信をするためのニックネームを入力してください:");
-        if (!replyAuthor || replyAuthor.trim() === '') {
-            alert("ニックネームが入力されなかったため、返信できません。");
-            return;
-        }
-        replyAuthor = replyAuthor.trim();
-    }
-    
-    const replyContent = prompt("返信コメントを入力してください:");
-    if (!replyContent) return;
-
-    try {
-        // 返信は投稿ドキュメントのサブコレクション 'replies' に追加
-        const repliesCollectionRef = collection(db, "posts", postId, "replies");
-        await addDoc(repliesCollectionRef, {
-            author: replyAuthor,
-            content: replyContent,
-            timestamp: serverTimestamp(),
-        });
-    } catch (error) {
-        console.error("返信投稿エラー:", error);
-        alert("返信投稿中にエラーが発生しました。コンソールを確認してください。");
-    }
-}
-window.postReply = postReply; // HTMLから呼び出せるようにグローバルに公開
-
-
-// 5. リアルタイムでの投稿表示処理（読み込み処理）とDOM生成の更新
-
-// 投稿に返信を表示するサブ関数
-function renderReplies(postDocId, repliesDiv) {
-    // サブコレクション 'replies' へのクエリ
-    const repliesQuery = query(
-        collection(db, "posts", postDocId, "replies"),
-        orderBy("timestamp", "asc") // 古い返信順に並べ替え
-    );
-
-    // 返信のリアルタイムリスナーを設定
-    onSnapshot(repliesQuery, (replySnapshot) => {
-        repliesDiv.innerHTML = ''; // 既存の返信リストをクリア
-        
-        if (replySnapshot.empty) {
-            repliesDiv.innerHTML = '<small style="color:#666;">まだ返信はありません。</small>';
-            return;
-        }
-
-        replySnapshot.forEach(replyDoc => {
-            const reply = replyDoc.data();
-            const replyElement = document.createElement('div');
-            replyElement.className = 'reply-card';
-
-            const dateObject = reply.timestamp ? reply.timestamp.toDate() : null;
-            const dateString = dateObject ? dateObject.toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '投稿中...';
-            
-            replyElement.innerHTML = `
-                <small><strong>${reply.author}</strong> (${dateString}): ${reply.content}</small>
-            `;
-            repliesDiv.appendChild(replyElement);
-        });
-    });
-}
-
-
-// メインの投稿リスナー
+// リアルタイムリスナーを設定 (V9 onSnapshot 関数を使用)
 const postsQuery = query(
     collection(db, "posts"),
     orderBy("timestamp", "desc") // 新しい投稿順に並べ替え
 );
 
 onSnapshot(postsQuery, (snapshot) => {
+    // 既存の投稿リストをクリア
     postsDiv.innerHTML = ''; 
 
+    // 取得した各ドキュメント（投稿）を処理
     snapshot.forEach(doc => {
         const post = doc.data();
-        const postId = doc.id; // ドキュメントIDを取得 (いいねや返信で必要)
+        const postId = doc.id; 
+        const currentLikes = post.likes || 0;
+        
         const postElement = document.createElement('div');
         postElement.className = 'post-card';
         
+        // タイムスタンプを整形
         const dateObject = post.timestamp ? post.timestamp.toDate() : null;
         const dateString = dateObject ? dateObject.toLocaleString('ja-JP') : '投稿中...';
         
-        // ニックネーム入力欄から現在のユーザー名を取得（いいねの判定に使用）
-        const currentAuthor = authorInput.value.trim(); 
-        
-        const likedByArray = Array.isArray(post.likedBy) ? post.likedBy : [];
-        const isLiked = currentAuthor && likedByArray.includes(currentAuthor);
-        const likeButtonClass = isLiked ? 'liked' : '';
-        const likeButtonText = isLiked ? '★いいね解除' : 'いいね！';
+        // ★画像要素のHTMLを動的に生成★
+        const imageHtml = post.imageUrl 
+            ? `<img src="${post.imageUrl}" alt="投稿画像" class="post-image">`
+            : ''; 
 
-        // ★【修正】ボタンの無効化（disabled属性）のコードを削除★
-        
-        // onclickに渡す文字列に含まれる可能性のあるシングルクォートをエスケープ処理
-        const escapedAuthor = currentAuthor.replace(/'/g, "\\'"); 
-        
+        // 投稿内容を HTML に挿入
         postElement.innerHTML = `
             <div class="post-header">
                 <strong>${post.author}</strong>
                 <span class="post-date">${dateString}</span>
             </div>
             <p class="post-content">${post.content}</p>
+            ${imageHtml}
+            
             <div class="post-actions">
-                <button 
-                    class="like-button ${likeButtonClass}" 
-                    onclick="window.toggleLike('${postId}', '${escapedAuthor}')"
-                >
-                    ${likeButtonText} (${post.likesCount || 0})
-                </button>
-                <button 
-                    class="reply-button" 
-                    onclick="window.postReply('${postId}')"
-                >
-                    返信する
-                </button>
+                <button class="like-button" data-post-id="${postId}">いいね！</button>
+                <span class="like-count">❤️ ${currentLikes}</span>
             </div>
-            <div class="replies-section" id="replies-${postId}">
-                </div>
+
+            <div class="replies-container">
+                <h4>返信</h4>
+                <div id="replies-list-${postId}">
+                    </div>
+                <form class="reply-form" id="reply-form-${postId}">
+                    <input type="text" placeholder="名前 (任意)" class="reply-author-input">
+                    <textarea placeholder="返信内容" required class="reply-content-input"></textarea>
+                    <button type="submit">返信する</button>
+                </form>
+            </div>
         `;
+        
+        // ★いいねボタンにイベントリスナーを設定★
+        const likeButton = postElement.querySelector('.like-button');
+        likeButton.addEventListener('click', () => {
+            likePost(postId);
+        });
+        
+        // ★返信サブコレクションのリアルタイムリスナーを設定★
+        setupRepliesListener(postId, postElement);
         
         // ページに追加
         postsDiv.appendChild(postElement);
-
-        // 返信セクションのレンダリングを開始
-        const repliesDiv = postElement.querySelector(`#replies-${postId}`);
-        renderReplies(postId, repliesDiv);
     });
 });
+
+// ★返信サブコレクションのリスナーを設定し、表示を更新する関数★
+function setupRepliesListener(postId, postElement) {
+    const db = window.db;
+    const query = window.query;
+    const orderBy = window.orderBy;
+    const collection = window.collection;
+    const onSnapshot = window.onSnapshot;
+    
+    // 返信一覧を表示する要素
+    const repliesListDiv = postElement.querySelector(`#replies-list-${postId}`);
+    // 返信フォーム
+    const replyForm = postElement.querySelector(`#reply-form-${postId}`);
+
+    // 返信フォームの送信イベントを処理
+    replyForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const authorInput = replyForm.querySelector('.reply-author-input');
+        const contentInput = replyForm.querySelector('.reply-content-input');
+        
+        const author = authorInput.value.trim();
+        const content = contentInput.value.trim();
+        
+        postReply(postId, author, content)
+            .then(() => {
+                // 成功したらフォームをクリア
+                contentInput.value = '';
+            })
+            .catch(error => console.error("フォームからの返信エラー:", error));
+    });
+
+    // 返信サブコレクションのクエリ
+    const repliesQuery = query(
+        collection(db, "posts", postId, "replies"),
+        orderBy("timestamp", "asc") // 古い順に表示
+    );
+
+    // リアルタイムリスナーを設定
+    onSnapshot(repliesQuery, (snapshot) => {
+        repliesListDiv.innerHTML = ''; // 返信一覧をクリア
+        
+        snapshot.forEach(replyDoc => {
+            const reply = replyDoc.data();
+            const replyElement = document.createElement('div');
+            replyElement.className = 'reply-item';
+
+            const dateObject = reply.timestamp ? reply.timestamp.toDate() : null;
+            const dateString = dateObject ? dateObject.toLocaleString('ja-JP') : '投稿中...';
+            const replyAuthor = reply.author || '匿名ファン';
+
+            replyElement.innerHTML = `
+                <p class="reply-content">${reply.content}</p>
+                <div class="reply-header">
+                    <strong>${replyAuthor}</strong> 
+                    <span class="reply-date">${dateString}</span>
+                </div>
+            `;
+            repliesListDiv.appendChild(replyElement);
+        });
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
 
