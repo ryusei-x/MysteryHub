@@ -20,6 +20,8 @@ const postButton = document.getElementById('postButton');
 const authorInput = document.getElementById('author');
 const contentInput = document.getElementById('content');
 const postsDiv = document.getElementById('posts');
+// ★追加: LINE共有ボタンの要素を取得
+const lineShareButton = document.getElementById('lineShareButton');
 
 // 2. 投稿ボタンクリック時の処理（書き込み処理）
 postButton.addEventListener('click', async () => {
@@ -243,4 +245,23 @@ onSnapshot(postsQuery, (snapshot) => {
         renderReplies(postId, repliesDiv);
     });
 });
+
+
+// ★追加: LINE共有機能の修正ロジック★
+if (lineShareButton) {
+    lineShareButton.addEventListener('click', (event) => {
+        // デフォルトのリンク遷移をキャンセル
+        event.preventDefault(); 
+        
+        // 共有メッセージとURLをエンコード
+        const shareText = 'ミステリーSNS「オタクのたまり場」で語り合おう！';
+        const currentUrl = window.location.href; 
+        
+        const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(shareText)}`;
+        
+        // 新しいタブで共有ページを開く
+        window.open(lineUrl, '_blank');
+    });
+}
+
 
