@@ -23,12 +23,17 @@
          <main>
              <input id="author" placeholder="ニックネーム" value="">
              <textarea id="content" placeholder="コメントしてください" ></textarea>
+             <input type="file" id="imageFile" accept="image/*">
              <button id="postButton">投稿する</button>
 
              <div id="posts">
                  </div>
          </main>
-    
+    <footer>
+        <p>© 2024 ミステリーオタクのたまり場</p>
+    </footer>
+
+    <script src="script.js"></script>
     <script type="module">
         // 必要な関数を CDN からインポート
         import { 
@@ -42,17 +47,19 @@
             orderBy, 
             onSnapshot, 
             serverTimestamp,
-            // --- ★追加・修正した関数★ ---
-            doc, 
-            updateDoc, 
-            increment,
-            arrayUnion,
-            arrayRemove,
             getDoc,
             // -----------------------------
         } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+        // ★追加: Storageのインポート★
+        import { 
+            getStorage, 
+            ref as storageRef, 
+            uploadBytes, 
+            getDownloadURL 
+        } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js';
 
-        // あなたの Firebase 設定
+
+        // あなたの Firebase 設定 (※実際の値に置き換えてください)
         const firebaseConfig = {
             apiKey: "AIzaSyBhMD-MZidG7U1kIGloqQHRnfe95roIjvU",
             authDomain: "mysterysns-734f7.firebaseapp.com",
@@ -68,29 +75,27 @@
         
         // Firestore のインスタンスを取得
         const db = getFirestore(app);
+        // ★追加: Storageのインスタンスを取得★
+        const storage = getStorage(app); 
 
         // 投稿処理を script.js で行うために、必要な関数とインスタンスをグローバルに公開します。
         window.db = db;
+        // ★追加: Storage関連の関数とインスタンスを公開★
+        window.storage = storage;
+        window.storageRef = storageRef;
+        window.uploadBytes = uploadBytes;
+        window.getDownloadURL = getDownloadURL;
+        // ------------------------------------
         window.collection = collection;
         window.addDoc = addDoc;
         window.query = query;
         window.orderBy = orderBy;
         window.onSnapshot = onSnapshot;
         window.serverTimestamp = serverTimestamp;
-        // --- ★追加・修正した関数を公開★ ---
-        window.doc = doc;
-        window.updateDoc = updateDoc;
-        window.increment = increment;
-        window.arrayUnion = arrayUnion;
-        window.arrayRemove = arrayRemove;
-        window.getDoc = getDoc;
-        // ------------------------------------
     </script>
-    
-    <script src="script.js" type="module"></script> 
 </body>
-
 </html>
+
 
 
 
