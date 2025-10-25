@@ -23,9 +23,9 @@
            </nav>
     </header>
     
-    <!-- ★変更点1: 共有ボタンコンテナを追加★ -->
+    <!-- ★変更点: 共有ボタンコンテナを追加★ -->
     <div class="share-container">
-        <!-- 注意: window.location.href は現在のページの URL に自動で置き換わります -->
+        <!-- LINE共有ボタン -->
         <a 
             href="https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent('ミステリーSNSで語り合おう！')}" 
             target="_blank" 
@@ -33,6 +33,7 @@
         >
             LINE <span>&#9990;</span>
         </a>
+        <!-- X (Twitter) 共有ボタン -->
         <a 
             href="https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent('ミステリーSNS「オタクのたまり場」で考察中！ #ミステリー #SNS')}" 
             target="_blank" 
@@ -41,7 +42,6 @@
             X <span>&#x274C;</span>
         </a>
     </div>
-    <!-- ★変更点1終わり★ -->
 
     <main>
         <input id="author" placeholder="ニックネーム" value="">
@@ -53,9 +53,8 @@
         </div>
     </main>
 
-    <!-- Firebase SDKのインポート (元のコードから変更なし) -->
     <script type="module">
-        // 必要な関数を CDN からインポート
+        // Firebaseのインポートと初期化
         import { 
             initializeApp 
         } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
@@ -67,17 +66,15 @@
             orderBy, 
             onSnapshot, 
             serverTimestamp,
-            // --- ★追加・修正した関数★ ---
             doc, 
             updateDoc, 
             increment,
             arrayUnion,
             arrayRemove,
             getDoc,
-            // -----------------------------
         } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
-        // あなたの Firebase 設定
+        // Firebaseの設定（環境に応じて変更してください）
         const firebaseConfig = {
             apiKey: "AIzaSyBhMD-MZidG7U1kIGloqQHRnfe95roIjvU",
             authDomain: "mysterysns-734f7.firebaseapp.com",
@@ -90,11 +87,9 @@
 
         // Firebase の初期化
         const app = initializeApp(firebaseConfig);
-        
-        // Firestore のインスタンスを取得
         const db = getFirestore(app);
 
-        // 投稿処理を script.js で行うために、必要な関数とインスタンスをグローバルに公開します。
+        // script.js で使用するために、必要な関数とインスタンスをグローバルに公開
         window.db = db;
         window.collection = collection;
         window.addDoc = addDoc;
@@ -102,17 +97,16 @@
         window.orderBy = orderBy;
         window.onSnapshot = onSnapshot;
         window.serverTimestamp = serverTimestamp;
-        // --- ★追加・修正した関数を公開★ ---
         window.doc = doc;
         window.updateDoc = updateDoc;
         window.increment = increment;
         window.arrayUnion = arrayUnion;
         window.arrayRemove = arrayRemove;
         window.getDoc = getDoc;
-        // ------------------------------------
     </script>
     
     <!-- 投稿処理のスクリプト -->
     <script type="module" src="script.js"></script>
 </body>
 </html>
+
