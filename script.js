@@ -24,10 +24,12 @@ const postsDiv = document.getElementById('posts');
 // 2. 投稿ボタンクリック時の処理（書き込み処理）
 postButton.addEventListener('click', async () => {
     
+    // ニックネームが空欄の場合「匿名ファン」をデフォルトにする
     const author = authorInput.value.trim() || '匿名ファン'; 
     const content = contentInput.value.trim();
 
     if (!content) {
+        // alert() は非推奨ですが、ここでは動作確認のため使用
         alert("コメントを入力してください！");
         return;
     }
@@ -35,13 +37,13 @@ postButton.addEventListener('click', async () => {
     try {
         const postsCollectionRef = collection(db, "posts");
         
-        // ★エラー対策済み: likesCount: 0 と likedBy: [] を明示的に設定★
+        // データを追加。いいね用のフィールドを初期化
         await addDoc(postsCollectionRef, {
             author: author,
             content: content,
             timestamp: serverTimestamp(),
             likesCount: 0, 
-            likedBy: [],
+            likedBy: [], // いいねしたユーザー名（ニックネーム）を格納する配列
         });
 
         // フォームをクリア
@@ -79,25 +81,26 @@ async function toggleLike(postId, currentAuthor) {
     }
     
     const postData = postSnap.data();
-    // ユーザーのニックネームが既にlikedBy配列に含まれているか確認
-    const isLiked = postData.likedBy && postData.likedBy.includes(authorToUse);
+    // authorToUseを使っていいね状態を確認
+    const likedByArray = Array.isArray(postData.likedBy) ? postData.likedBy : [];
+    const isLiked = likedByArray.includes(authorToUse);
     
     try {
         if (isLiked) {
-            // いいねを解除
+            // いいねを解除: カウントを減らし、ニックネームを配列から削除
             await updateDoc(postRef, {
                 likesCount: increment(-1),
                 likedBy: arrayRemove(authorToUse)
             });
         } else {
-            // いいねを追加
+            // いいねを追加: カウントを増やし、ニックネームを配列に追加
             await updateDoc(postRef, {
                 likesCount: increment(1),
                 likedBy: arrayUnion(authorToUse)
             });
         }
     } catch (error) {
-        console.error("いいね処理エラー（権限不足の可能性あり）:", error.message);
+        console.error("いいね処理エラー:", error.message);
         alert("いいね処理中にエラーが発生しました。コンソールを確認してください。");
     }
 }
@@ -107,7 +110,6 @@ window.toggleLike = toggleLike; // HTMLから呼び出せるようにグロー�
 // 4. 返信機能の処理 (prompt式)
 async function postReply(postId) {
     
-    // ニックネーム入力欄から自動取得
     let replyAuthor = authorInput.value.trim();
 
     // ニックネームが空の場合、promptで入力を求める
@@ -141,14 +143,14 @@ async function postReply(postId) {
 window.postReply = postReply; // HTMLから呼び出せるようにグローバルに公開
 
 
-// 5. リアルタイムでの投稿表示処理（読み込み処理）とDOM生成の更新
+// 5. リアルタイムでの投稿表示処理（読み込み処理）
 
 // 投稿に返信を表示するサブ関数
 function renderReplies(postDocId, repliesDiv) {
     // サブコレクション 'replies' へのクエリ
     const repliesQuery = query(
         collection(db, "posts", postDocId, "replies"),
-        orderBy("timestamp", "asc") // 古い返信順に並べ替え
+        orderBy("timestamp", "asc")
     );
 
     // 返信のリアルタイムリスナーを設定
@@ -191,7 +193,7 @@ onSnapshot(postsQuery, (snapshot) => {
 
     snapshot.forEach(doc => {
         const post = doc.data();
-        const postId = doc.id; // ドキュメントIDを取得 (いいねや返信で必要)
+        const postId = doc.id;
         const postElement = document.createElement('div');
         postElement.className = 'post-card';
         
