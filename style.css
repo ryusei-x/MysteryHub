@@ -69,9 +69,7 @@ header li {
     background-color: #00c300; /* LINEグリーン */
 }
 
-.share-button.x {
-    background-color: #000000; /* X/Twitterブラック */
-}
+
 
 .share-button span {
     margin-left: 5px;
@@ -83,7 +81,9 @@ main {
     margin: 20px auto;
     padding: 0 15px;
 }
-
+main p{
+   text-align: center;
+}
 input, textarea {
     width: 100%;
     padding: 12px;
@@ -206,6 +206,7 @@ input, textarea {
 }
 
     
+
 
 
 
