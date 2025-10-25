@@ -29,11 +29,7 @@
              <div id="posts">
                  </div>
          </main>
-    <footer>
-        <p>© 2024 ミステリーオタクのたまり場</p>
-    </footer>
-
-    <script src="script.js"></script>
+    
     <script type="module">
         // 必要な関数を CDN からインポート
         import { 
@@ -47,13 +43,13 @@
             orderBy, 
             onSnapshot, 
             serverTimestamp,
-            getDoc,
-            // ★追加: いいね機能に必要な関数をインポート★
+            // ★いいね・返信機能に必要な関数をインポート★
             updateDoc, 
-            doc 
-            // ----------------------------------------
+            doc,
+            increment,
+            getDoc,
         } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
-        // Storageのインポート
+        // ★画像アップロード機能に必要なStorage関数をインポート★
         import { 
             getStorage, 
             ref as storageRef, 
@@ -78,16 +74,12 @@
         
         // Firestore のインスタンスを取得
         const db = getFirestore(app);
-        // Storageのインスタンスを取得
+        // ★Storageのインスタンスを取得★
         const storage = getStorage(app); 
 
         // 投稿処理を script.js で行うために、必要な関数とインスタンスをグローバルに公開します。
         window.db = db;
-        // Storage関連の関数とインスタンスを公開
-        window.storage = storage;
-        window.storageRef = storageRef;
-        window.uploadBytes = uploadBytes;
-        window.getDownloadURL = getDownloadURL;
+        
         // Firestore関連の関数を公開
         window.collection = collection;
         window.addDoc = addDoc;
@@ -95,13 +87,21 @@
         window.orderBy = orderBy;
         window.onSnapshot = onSnapshot;
         window.serverTimestamp = serverTimestamp;
-        // ★追加: いいね機能に必要な関数を公開★
-        window.updateDoc = updateDoc;
         window.doc = doc;
-        // ----------------------------------
+        window.updateDoc = updateDoc;
+        window.increment = increment;
+
+        // ★Storage関連の関数とインスタンスを公開★
+        window.storage = storage;
+        window.storageRef = storageRef;
+        window.uploadBytes = uploadBytes;
+        window.getDownloadURL = getDownloadURL;
     </script>
+    
+    <script src="script.js" type="module"></script> 
 </body>
-</html>>
+
+</html>
 
 
 
