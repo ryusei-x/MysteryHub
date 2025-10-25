@@ -41,6 +41,43 @@ header li {
     border-left: 3px solid #f1c40f; /* 警告や重要な情報の色 */
 }
 
+/* ★追加: 共有ボタンコンテナのスタイル★ */
+.share-container {
+    max-width: 800px;
+    margin: 10px auto 20px auto;
+    padding: 0 15px;
+    text-align: right; /* 右寄せ */
+}
+
+.share-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    margin-left: 10px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    transition: opacity 0.2s;
+}
+.share-button:hover {
+    opacity: 0.8;
+}
+
+.share-button.line {
+    background-color: #00c300; /* LINEグリーン */
+}
+
+.share-button.x {
+    background-color: #000000; /* X/Twitterブラック */
+}
+
+.share-button span {
+    margin-left: 5px;
+}
+/* ★追加終わり★ */
+
 main {
     max-width: 800px;
     margin: 20px auto;
@@ -169,5 +206,6 @@ input, textarea {
 }
 
     
+
 
 
