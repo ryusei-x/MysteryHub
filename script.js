@@ -20,8 +20,8 @@ const postButton = document.getElementById('postButton');
 const authorInput = document.getElementById('author');
 const contentInput = document.getElementById('content');
 const postsDiv = document.getElementById('posts');
-// ★追加: LINE共有ボタンの要素を取得
-const lineShareButton = document.getElementById('lineShareButton');
+// ★注意: この変数への要素の代入は、以下の window.onload 内に移動します。
+let lineShareButton; 
 
 // 2. 投稿ボタンクリック時の処理（書き込み処理）
 postButton.addEventListener('click', async () => {
@@ -247,21 +247,27 @@ onSnapshot(postsQuery, (snapshot) => {
 });
 
 
-// ★追加: LINE共有機能の修正ロジック★
-if (lineShareButton) {
-    lineShareButton.addEventListener('click', (event) => {
-        // デフォルトのリンク遷移をキャンセル
-        event.preventDefault(); 
-        
-        // 共有メッセージとURLをエンコード
-        const shareText = 'ミステリーSNS「オタクのたまり場」で語り合おう！';
-        const currentUrl = window.location.href; 
-        
-        const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(shareText)}`;
-        
-        // 新しいタブで共有ページを開く
-        window.open(lineUrl, '_blank');
-    });
-}
+// ★修正: window.onload を使用して、DOM読み込み完了後にイベントリスナーを設定します。
+window.onload = function() {
+    // lineShareButton をここで取得し直す
+    const lineShareButton = document.getElementById('lineShareButton');
+
+    if (lineShareButton) {
+        lineShareButton.addEventListener('click', (event) => {
+            // デフォルトのリンク遷移をキャンセル
+            event.preventDefault(); 
+            
+            // 共有メッセージとURLをエンコード
+            const shareText = 'ミステリーSNS「オタクのたまり場」で語り合おう！';
+            const currentUrl = window.location.href; 
+            
+            const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(shareText)}`;
+            
+            // 新しいタブで共有ページを開く
+            window.open(lineUrl, '_blank');
+        });
+    }
+};
+// ★修正終わり: 既存のLINE共有ロジックを window.onload 関数で囲みました。
 
 
