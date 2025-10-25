@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ミステリーオタクのたまり場</title>
+   <link rel="stylesheet" href="style.css">
+    <meta name="google-site-verification" content="Q1IfW4_LTxtExFhWzzAQ1GSMa3br23Tz7SC5pvee_RQ" />
+  </head>
+<body>
+    <header>
+        <h1>ミステリーオタクのたまり場</h1>
+          <img src="ribbon.png" alt="リボン">
+            <p>このサイトはミステリー小説や映画について語り合うサイトです。できることは主に、以下の３つです</p>
+           <nav><li>1.ミステリーに関する話題を投稿（奇想天外のトリックは？好きな探偵、刑事は？など）</li>
+           <li>2.投稿に対して、いいねや返信で参加</li>
+           <li>3.話題への反応を見て考察や語り合って楽しむ</li>
+            </nav>
+          <nav> <p>禁止事項は以下の１つです</p>
+           <li>1.いかなる誹謗中傷を目的としたコメントも行わない</li>
+           </nav>
+         </header>
+         <main>
+             <input id="author" placeholder="ニックネーム" value="">
+             <textarea id="content" placeholder="コメントしてください" ></textarea>
+             <button id="postButton">投稿する</button>
+
+             <div id="posts">
+                 </div>
+         </main>
+    
+    <script type="module">
+        // 必要な関数を CDN からインポート
+        import { 
+            initializeApp 
+        } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            query, 
+            orderBy, 
+            onSnapshot, 
+            serverTimestamp,
+            // --- ★追加・修正した関数★ ---
+            doc, 
+            updateDoc, 
+            increment,
+            arrayUnion,
+            arrayRemove,
+            getDoc,
+            // -----------------------------
+        } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+
+        // あなたの Firebase 設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyBhMD-MZidG7U1kIGloqQHRnfe95roIjvU",
+            authDomain: "mysterysns-734f7.firebaseapp.com",
+            projectId: "mysterysns-734f7",
+            storageBucket: "mysterysns-734f7.firebasestorage.app",
+            messagingSenderId: "4298363521",
+            appId: "1:4298363521:web:7ce62992d54f8e37c8b380",
+            measurementId: "G-5PWGSZKMQX"
+        };
+
+        // Firebase の初期化
+        const app = initializeApp(firebaseConfig);
+        
+        // Firestore のインスタンスを取得
+        const db = getFirestore(app);
+
+        // 投稿処理を script.js で行うために、必要な関数とインスタンスをグローバルに公開します。
+        window.db = db;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.query = query;
+        window.orderBy = orderBy;
+        window.onSnapshot = onSnapshot;
+        window.serverTimestamp = serverTimestamp;
+        // --- ★追加・修正した関数を公開★ ---
+        window.doc = doc;
+        window.updateDoc = updateDoc;
+        window.increment = increment;
+        window.arrayUnion = arrayUnion;
+        window.arrayRemove = arrayRemove;
+        window.getDoc = getDoc;
+        // ------------------------------------
+    </script>
+    
+    <script src="script.js" type="module"></script> 
+</body>
+
+</html>
