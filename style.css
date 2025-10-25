@@ -7,29 +7,53 @@ body {
 }
 
 header {
+    /* ★修正点1: 画像を重ねるための設定と、高さを指定し直しました★ */
+    position: relative;
     text-align: center;
-    background-color: #3f51b5; /* ミステリアスな青色 */
     color: white;
-    padding: 20px 0 10px 0;
+    /* paddingは画像の上にテキストを重ねるために、内側のコンテンツコンテナに移動します */
+    padding: 0;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* 確実に画像を表示するために最小の高さを設定 */
+    min-height: 250px; 
+    overflow: hidden; /* 画像がはみ出さないように */
+    background-color: #3f51b5; /* 画像がない場合の背景色 */
+}
+
+/* ★修正点2: 画像をヘッダー全体に広げる★ */
+#header-image {
+    width: 100%;
+    height: 100%; /* 親要素 (header) の高さいっぱいに広げる */
+    object-fit: cover;
+    display: block;
+    margin: 0;
+    /* 画像を完全に背景として扱うため、境界線を削除 */
+    border-bottom: none; 
+    /* 画像を暗くして文字を読みやすくするためのフィルター */
+    filter: brightness(0.5);
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1; /* テキストよりも下に配置 */
+}
+
+/* ★修正点3: テキストコンテンツを画像の上に重ねるためのコンテナ★ */
+.header-content {
+    position: relative;
+    z-index: 2; /* 画像より上に配置 */
+    padding: 20px 15px; /* 以前のheader paddingをこちらに移動 */
+    max-width: 600px;
+    margin: 0 auto;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.7); /* 文字の視認性を高める */
 }
 
 header h1 {
     margin: 0;
-    font-size: 2em;
+    font-size: 2.2em;
     padding-bottom: 10px;
 }
+/* 以前の header h1 padding-bottom: 10px; は .header-content 内で調整 */
 
-/* ★修正点: 新しいヘッダー画像のスタイル★ */
-#header-image {
-    width: 100%; /* 親要素 (header) の幅いっぱいに広げる */
-    max-height: 200px; /* 最大高さを設定して大きくなりすぎないようにする */
-    object-fit: cover; /* 縦横比を維持しつつ、要素全体を覆うように調整 */
-    display: block; /* 余分なスペースを削除 */
-    margin: 0 auto 15px auto; /* 中央寄せと下部のマージン */
-    border-bottom: 5px solid #283593; /* 濃い青で区切り線 */
-}
-/* 以前のリボン画像 (header img) のスタイルは削除しました */
 
 header p {
     margin: 10px 0;
@@ -216,7 +240,9 @@ button#postButton:hover {
     }
 }
 
+
     
+
 
 
 
