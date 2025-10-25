@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ミステリーオタクのたまり場</title>
-   <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome (アイコン用) を追加 -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="style.css">
     <meta name="google-site-verification" content="Q1IfW4_LTxtExFhWzzAQ1GSMa3br23Tz7SC5pvee_RQ" />
-  </head>
+</head>
 <body>
     <header>
         <h1>ミステリーオタクのたまり場</h1>
@@ -19,16 +21,39 @@
           <nav> <p>禁止事項は以下の１つです</p>
            <li>1.いかなる誹謗中傷を目的としたコメントも行わない</li>
            </nav>
-         </header>
-         <main>
-             <input id="author" placeholder="ニックネーム" value="">
-             <textarea id="content" placeholder="コメントしてください" ></textarea>
-             <button id="postButton">投稿する</button>
-
-             <div id="posts">
-                 </div>
-         </main>
+    </header>
     
+    <!-- ★変更点1: 共有ボタンコンテナを追加★ -->
+    <div class="share-container">
+        <!-- 注意: window.location.href は現在のページの URL に自動で置き換わります -->
+        <a 
+            href="https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent('ミステリーSNSで語り合おう！')}" 
+            target="_blank" 
+            class="share-button line"
+        >
+            LINE <span>&#9990;</span>
+        </a>
+        <a 
+            href="https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent('ミステリーSNS「オタクのたまり場」で考察中！ #ミステリー #SNS')}" 
+            target="_blank" 
+            class="share-button x"
+        >
+            X <span>&#x274C;</span>
+        </a>
+    </div>
+    <!-- ★変更点1終わり★ -->
+
+    <main>
+        <input id="author" placeholder="ニックネーム" value="">
+        <textarea id="content" placeholder="コメントしてください" ></textarea>
+        <button id="postButton">投稿する</button>
+
+        <div id="posts">
+            <!-- 投稿はここにリアルタイムで表示されます -->
+        </div>
+    </main>
+
+    <!-- Firebase SDKのインポート (元のコードから変更なし) -->
     <script type="module">
         // 必要な関数を CDN からインポート
         import { 
@@ -87,7 +112,7 @@
         // ------------------------------------
     </script>
     
-    <script src="script.js" type="module"></script> 
+    <!-- 投稿処理のスクリプト -->
+    <script type="module" src="script.js"></script>
 </body>
-
 </html>
