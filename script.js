@@ -24,7 +24,6 @@ const postsDiv = document.getElementById('posts');
 // 2. 投稿ボタンクリック時の処理（書き込み処理）
 postButton.addEventListener('click', async () => {
     
-    // ニックネーム入力欄の値を、いいね機能でも使うためにトリムして取得
     const author = authorInput.value.trim() || '匿名ファン'; 
     const content = contentInput.value.trim();
 
@@ -36,7 +35,7 @@ postButton.addEventListener('click', async () => {
     try {
         const postsCollectionRef = collection(db, "posts");
         
-        // データを追加。いいね用のフィールド(likesCount)と、いいねを押したユーザーIDの配列(likedBy)を追加
+        // ★エラー対策済み: likesCount: 0 と likedBy: [] を明示的に設定★
         await addDoc(postsCollectionRef, {
             author: author,
             content: content,
@@ -55,12 +54,12 @@ postButton.addEventListener('click', async () => {
 });
 
 
-// 3. いいね機能の実装 (修正)
+// 3. いいね機能の実装 (トグル式)
 async function toggleLike(postId, currentAuthor) {
     
     let authorToUse = currentAuthor;
     
-    // ★【修正】ニックネームが空の場合、promptで入力を求める★
+    // ニックネームが空の場合、promptで入力を求める
     if (!authorToUse) {
         authorToUse = prompt("いいねをするためのニックネームを入力してください:");
         if (!authorToUse || authorToUse.trim() === '') {
@@ -80,38 +79,38 @@ async function toggleLike(postId, currentAuthor) {
     }
     
     const postData = postSnap.data();
-    // authorToUseを使っていいね状態を確認
+    // ユーザーのニックネームが既にlikedBy配列に含まれているか確認
     const isLiked = postData.likedBy && postData.likedBy.includes(authorToUse);
     
     try {
         if (isLiked) {
-            // いいねを解除: カウントを減らし、ニックネームを配列から削除
+            // いいねを解除
             await updateDoc(postRef, {
                 likesCount: increment(-1),
                 likedBy: arrayRemove(authorToUse)
             });
         } else {
-            // いいねを追加: カウントを増やし、ニックネームを配列に追加
+            // いいねを追加
             await updateDoc(postRef, {
                 likesCount: increment(1),
                 likedBy: arrayUnion(authorToUse)
             });
         }
     } catch (error) {
-        console.error("いいね処理エラー:", error);
+        console.error("いいね処理エラー（権限不足の可能性あり）:", error.message);
         alert("いいね処理中にエラーが発生しました。コンソールを確認してください。");
     }
 }
 window.toggleLike = toggleLike; // HTMLから呼び出せるようにグローバルに公開
 
 
-// 4. 返信機能の処理 (修正)
+// 4. 返信機能の処理 (prompt式)
 async function postReply(postId) {
     
     // ニックネーム入力欄から自動取得
     let replyAuthor = authorInput.value.trim();
 
-    // ★【修正】ニックネームが空の場合、promptで入力を求める★
+    // ニックネームが空の場合、promptで入力を求める
     if (!replyAuthor) {
         replyAuthor = prompt("返信をするためのニックネームを入力してください:");
         if (!replyAuthor || replyAuthor.trim() === '') {
@@ -122,7 +121,9 @@ async function postReply(postId) {
     }
     
     const replyContent = prompt("返信コメントを入力してください:");
-    if (!replyContent) return;
+    if (!replyContent || replyContent.trim() === '') {
+        return;
+    }
 
     try {
         // 返信は投稿ドキュメントのサブコレクション 'replies' に追加
@@ -155,7 +156,7 @@ function renderReplies(postDocId, repliesDiv) {
         repliesDiv.innerHTML = ''; // 既存の返信リストをクリア
         
         if (replySnapshot.empty) {
-            repliesDiv.innerHTML = '<small style="color:#666;">まだ返信はありません。</small>';
+            repliesDiv.innerHTML = '<small style="color:#666; display:block; padding:5px 0;">まだ返信はありません。</small>';
             return;
         }
 
@@ -168,7 +169,10 @@ function renderReplies(postDocId, repliesDiv) {
             const dateString = dateObject ? dateObject.toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '投稿中...';
             
             replyElement.innerHTML = `
-                <small><strong>${reply.author}</strong> (${dateString}): ${reply.content}</small>
+                <div class="reply-content-box">
+                    <p>${reply.content}</p>
+                    <small><strong>${reply.author}</strong> (${dateString})</small>
+                </div>
             `;
             repliesDiv.appendChild(replyElement);
         });
@@ -202,8 +206,6 @@ onSnapshot(postsQuery, (snapshot) => {
         const likeButtonClass = isLiked ? 'liked' : '';
         const likeButtonText = isLiked ? '★いいね解除' : 'いいね！';
 
-        // ★【修正】ボタンの無効化（disabled属性）のコードを削除★
-        
         // onclickに渡す文字列に含まれる可能性のあるシングルクォートをエスケープ処理
         const escapedAuthor = currentAuthor.replace(/'/g, "\\'"); 
         
@@ -239,3 +241,4 @@ onSnapshot(postsQuery, (snapshot) => {
         renderReplies(postId, repliesDiv);
     });
 });
+
