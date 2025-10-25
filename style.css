@@ -17,7 +17,7 @@ header {
 
 header h1 {
     margin-top: 0;
-    font-size: 2em;
+    font-size: 1.3em;
     letter-spacing: 1px;
 }
 header img {
@@ -25,7 +25,7 @@ header img {
     width: 60px; 
     position: absolute;
     top: 20px;
-    right: 15px;
+    right: 770px;
     opacity: 0.8;
 }
 
@@ -169,4 +169,5 @@ input, textarea {
 }
 
     
+
 
