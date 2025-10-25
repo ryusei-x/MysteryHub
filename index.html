@@ -48,9 +48,12 @@
             onSnapshot, 
             serverTimestamp,
             getDoc,
-            // -----------------------------
+            // ★追加: いいね機能に必要な関数をインポート★
+            updateDoc, 
+            doc 
+            // ----------------------------------------
         } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
-        // ★追加: Storageのインポート★
+        // Storageのインポート
         import { 
             getStorage, 
             ref as storageRef, 
@@ -75,26 +78,31 @@
         
         // Firestore のインスタンスを取得
         const db = getFirestore(app);
-        // ★追加: Storageのインスタンスを取得★
+        // Storageのインスタンスを取得
         const storage = getStorage(app); 
 
         // 投稿処理を script.js で行うために、必要な関数とインスタンスをグローバルに公開します。
         window.db = db;
-        // ★追加: Storage関連の関数とインスタンスを公開★
+        // Storage関連の関数とインスタンスを公開
         window.storage = storage;
         window.storageRef = storageRef;
         window.uploadBytes = uploadBytes;
         window.getDownloadURL = getDownloadURL;
-        // ------------------------------------
+        // Firestore関連の関数を公開
         window.collection = collection;
         window.addDoc = addDoc;
         window.query = query;
         window.orderBy = orderBy;
         window.onSnapshot = onSnapshot;
         window.serverTimestamp = serverTimestamp;
+        // ★追加: いいね機能に必要な関数を公開★
+        window.updateDoc = updateDoc;
+        window.doc = doc;
+        // ----------------------------------
     </script>
 </body>
-</html>
+</html>>
+
 
 
 
